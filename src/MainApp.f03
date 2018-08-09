@@ -10,8 +10,8 @@ program MainApp
   integer mxmdm, ierr
   real(kind=dp), allocatable  :: pmom(:,:), evans(:,:), evanstot(:,:)
   type(SDistParams)           :: params
-  character(len=13)           :: fname
-  integer I, J
+  !character(len=13)           :: fname
+  integer I
 
   INTEGER   MAXV, MAXA, MAXLAY, NLAYS
   PARAMETER (MAXV=128, MAXA=32, NLAYS=40)
@@ -97,7 +97,7 @@ program MainApp
   print '(A,F5.3,A,F5.3)', 'tau_a(',params%wl,') = ', taua
     
 
-  open(200, FILE='atmoslay.lay', status='replace')
+  !open(200, FILE='atmoslay.lay', status='replace')
   ! Вычитсяем оптические характеристики для слоев
   ! Сохраняем матрицы рассеяния
   DO I=1, NLAYS
@@ -115,11 +115,11 @@ program MainApp
     
     write(SCAT_FILES(I),'(A,I3.3)') '.scat_file', I
     call write_sca_file(SCAT_FILES(I), extt, scat, evanstot)
-    write(200, '(F6.2,F7.2,E12.5,2X,A1,A13,A1)') HEIGHT(I), 0.0, 0.0, "'",fname,"'"
+    !write(200, '(F6.2,F7.2,E12.5,2X,A1,A13,A1)') HEIGHT(I), 0.0, 0.0, "'",fname,"'"
     print '(F7.1, 3E10.2)', HEIGHT(I), extm, exta, extt
   END DO
 
-  close(200)
+  !close(200)
 
   deallocate(pmom,  evans, evanstot)
   
