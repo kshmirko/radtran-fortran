@@ -8,7 +8,7 @@ DEXE    = build/
 LIBS    =  -lrt3  -lmiev0  -L./lib/ 
 FC      = gfortran
 OPTSC   = -c -Wall -J build/mod
-OPTSL   = -O3 static -J build/mod
+OPTSL   = -O3 -J build/mod
 VPATH   = $(DSRC) $(DOBJ) $(DMOD)
 MKDIRS  = $(DOBJ) $(DMOD) $(DEXE)
 LCEXES  = $(shell echo $(EXES) | tr '[:upper:]' '[:lower:]')
@@ -20,14 +20,19 @@ COTEXT  = "Compiling $(<F)"
 LITEXT  = "Assembling $@"
 
 #building rules
-$(DEXE)MAINAPP: $(MKDIRS) $(DOBJ)mainapp.o \
+$(DEXE)DUMB: $(MKDIRS) $(DOBJ)dumb.o \
+	$(DOBJ)dumb.o \
 	$(DOBJ)mainapp.o
-	@rm -f $(filter-out $(DOBJ)mainapp.o,$(EXESOBJ))
+	@rm -f $(filter-out $(DOBJ)dumb.o,$(EXESOBJ))
 	@echo $(LITEXT)
 	@$(FC) $(OPTSL) $(DOBJ)*.o $(LIBS) -o $@
-EXES := $(EXES) MAINAPP
+EXES := $(EXES) DUMB
 
 #compiling rules
+$(DOBJ)dumb.o: src/dumb.f03
+	@echo $(COTEXT)
+	@$(FC) $(OPTSC) -Ilib  $< -o $@
+
 $(DOBJ)mainapp.o: src/MainApp.f03 \
 	$(DOBJ)rayleigh.o \
 	$(DOBJ)aerosol.o \

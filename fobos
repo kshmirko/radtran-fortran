@@ -1,7 +1,7 @@
 [default]
 compiler=Gnu
 cflags    = -c -Wall
-lflags    = -O3 static
+lflags    = -O3 
 mod_dir   = ./mod/
 obj_dir   = ./obj/
 build_dir = ./build/
@@ -11,7 +11,7 @@ lib_dir   = ./lib/
 include   = ./lib/ 
 colors    = True
 quiet     = False
-target    = src/MainApp.f03
+target    = src/dumb.f03
 output    = libcalc.a 
 log       = True
 coverage  = False
