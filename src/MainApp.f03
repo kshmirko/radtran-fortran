@@ -36,14 +36,14 @@
 ! end program
 
 
-subroutine DO_CALC(params, hpbl, taua, numazim, galbedo, nmu, OUT_FILE) 
+subroutine DO_CALC(params, hpbl, taua, numazim, galbedo, sza, nmu, nlays, OUT_FILE) 
   use miev0mod
   use rayleigh  
   use aerosol
   use atmos
   implicit none
 
-  real(kind=dp) :: taua, hpbl, galbedo
+  real(kind=dp) :: taua, hpbl, galbedo, sza
   integer                     :: numazim
   type(SDistParams)           :: params
 
@@ -59,7 +59,7 @@ subroutine DO_CALC(params, hpbl, taua, numazim, galbedo, nmu, OUT_FILE)
   integer I
 
   INTEGER   MAXV, MAXA, MAXLAY, NLAYS, nmu
-  PARAMETER (MAXV=64, MAXA=32, NLAYS=40, mxmdm=60)
+  PARAMETER (MAXV=64, MAXA=32, mxmdm=60)
   PARAMETER (MAXLAY=200)
 
   real(kind=dp)  :: pmom(0:mxmdm,4), evans(0:mxmdm,6), evanstot(0:mxmdm,6)
@@ -147,6 +147,13 @@ subroutine DO_CALC(params, hpbl, taua, numazim, galbedo, nmu, OUT_FILE)
   !print '(A,F5.3,A,F5.3)', 'tau_m(',params%wl,') = ', tau_m(params%wl)
   !print '(A,F5.3,A,F5.3)', 'tau_a(',params%wl,') = ', taua
     
+  ! Записываем матрицу для всей толщи атмосферы
+  extm = tau_m(params%wl)
+  extt = taua+extm
+  scat = taua*omegaa+extm
+
+  evanstot = (evans*taua+Evans_mol*extm)/extt
+  call write_sca_file('.allatm_sca', extt, scat, evanstot)
 
   !open(200, FILE='atmoslay.lay', status='replace')
   ! Вычитсяем оптические характеристики для слоев
@@ -184,7 +191,7 @@ subroutine DO_CALC(params, hpbl, taua, numazim, galbedo, nmu, OUT_FILE)
   QUAD_TYPE = 'G'         ! тип квадратуры
   DELTAM = 'Y'            ! дельта-м масштабирование
   DIRECT_FLUX = 1.0_dp    ! поток радиации на верхней границе атмосфере
-  THETA = 10.0_dp         ! зенитный угол солнца
+  THETA = sza             ! зенитный угол солнца
   DIRECT_MU = DABS(DCOS(0.017453292D0*(THETA)))
   GROUND_TEMP = 0.0_dp    ! температура поверхности
   GROUND_TYPE = 'L'       ! тип поверхности
@@ -239,12 +246,12 @@ subroutine DO_CALC(params, hpbl, taua, numazim, galbedo, nmu, OUT_FILE)
 
 end subroutine DO_CALC
 
-subroutine DO_CALC1(r0, r1, npts, wl, mre, mim, gamma, dens, hpbl, taua, numazim, galbedo, nmu, OUT_FILE) BIND(C)
+subroutine DO_CALC1(r0, r1, npts, wl, mre, mim, gamma, dens, hpbl, taua, numazim, galbedo, theta, nmu, nlays, OUT_FILE) BIND(C)
   use miev0mod
   use iso_c_binding
   implicit none
-  real(c_double), intent(in), value     ::  hpbl, taua, galbedo, r0, r1, wl, mre, mim, gamma, dens
-  integer(c_int), intent(in), value     ::  numazim, nmu, npts
+  real(c_double), intent(in), value     ::  hpbl, taua, galbedo, r0, r1, wl, mre, mim, gamma, dens, theta
+  integer(c_int), intent(in), value     ::  numazim, nmu, npts, nlays
   
   character(1), intent(in)              ::  OUT_FILE
   type(SDistParams)                     ::  params
@@ -259,7 +266,7 @@ subroutine DO_CALC1(r0, r1, npts, wl, mre, mim, gamma, dens, hpbl, taua, numazim
   params%gamma = gamma
   params%dens = dens
   
-  call DO_CALC(params, hpbl, taua, numazim, galbedo, nmu, OUT_FILE)
+  call DO_CALC(params, hpbl, taua, numazim, galbedo, theta, nmu, nlays, OUT_FILE)
 
   
 end subroutine DO_CALC1
